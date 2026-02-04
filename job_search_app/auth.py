@@ -143,7 +143,6 @@ class AuthenticationManager:
         except Exception as e:
             return False, f"Error updating profile: {str(e)}"
 
-
 class AnimatedAuthWindow:
     def __init__(self, root, auth_manager, on_login_success):
         self.root = root
@@ -295,24 +294,41 @@ class AnimatedAuthWindow:
         self.register_frame = tk.Frame(self.main_container, bg="white", relief=tk.FLAT, bd=0)
         self.register_frame.place(relx=0.5, rely=0, relwidth=0.5, relheight=1)
         
-        # Create register form content
+        # Create register form content - USING A SCROLLABLE FRAME
         self.create_register_form_content()
         
         self.root.title("Job Matching Assistant - Sign Up")
     
     def create_register_form_content(self):
+        # Create a canvas and scrollbar for the register form
+        self.register_canvas = tk.Canvas(self.register_frame, bg="white", highlightthickness=0)
+        scrollbar = tk.Scrollbar(self.register_frame, orient="vertical", command=self.register_canvas.yview)
+        scrollable_frame = tk.Frame(self.register_canvas, bg="white")
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.register_canvas.configure(scrollregion=self.register_canvas.bbox("all"))
+        )
+        
+        self.register_canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        self.register_canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Pack canvas and scrollbar
+        self.register_canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
         # Title
-        title_label = tk.Label(self.register_frame, text="Create Account", 
+        title_label = tk.Label(scrollable_frame, text="Create Account", 
                               font=("Arial", 24, "bold"), bg="white", fg="#2c3e50")
         title_label.pack(pady=(40, 10))
         
-        subtitle_label = tk.Label(self.register_frame, 
+        subtitle_label = tk.Label(scrollable_frame, 
                                  text="Fill in your details to get started", 
                                  font=("Arial", 10), bg="white", fg="#7f8c8d")
-        subtitle_label.pack(pady=(0, 40))
+        subtitle_label.pack(pady=(0, 20))
         
         # Name field
-        name_frame = tk.Frame(self.register_frame, bg="white")
+        name_frame = tk.Frame(scrollable_frame, bg="white")
         name_frame.pack(pady=10, padx=40, fill=tk.X)
         
         tk.Label(name_frame, text="Username", font=("Arial", 10, "bold"), 
@@ -326,7 +342,7 @@ class AnimatedAuthWindow:
         name_entry.pack(pady=5, fill=tk.X)
         
         # Email field
-        email_frame = tk.Frame(self.register_frame, bg="white")
+        email_frame = tk.Frame(scrollable_frame, bg="white")
         email_frame.pack(pady=10, padx=40, fill=tk.X)
         
         tk.Label(email_frame, text="Email", font=("Arial", 10, "bold"), 
@@ -340,7 +356,7 @@ class AnimatedAuthWindow:
         email_entry.pack(pady=5, fill=tk.X)
         
         # Skills field
-        skills_frame = tk.Frame(self.register_frame, bg="white")
+        skills_frame = tk.Frame(scrollable_frame, bg="white")
         skills_frame.pack(pady=10, padx=40, fill=tk.X)
         
         tk.Label(skills_frame, text="Skills (comma-separated)", font=("Arial", 10, "bold"), 
@@ -354,7 +370,7 @@ class AnimatedAuthWindow:
         skills_entry.pack(pady=5, fill=tk.X)
         
         # Location field
-        location_frame = tk.Frame(self.register_frame, bg="white")
+        location_frame = tk.Frame(scrollable_frame, bg="white")
         location_frame.pack(pady=10, padx=40, fill=tk.X)
         
         tk.Label(location_frame, text="Location", font=("Arial", 10, "bold"), 
@@ -367,8 +383,8 @@ class AnimatedAuthWindow:
                                  highlightbackground="#ecf0f1")
         location_entry.pack(pady=5, fill=tk.X)
         
-        # Password field
-        password_frame = tk.Frame(self.register_frame, bg="white")
+        # Password field - THIS WAS MISSING FROM YOUR ORIGINAL
+        password_frame = tk.Frame(scrollable_frame, bg="white")
         password_frame.pack(pady=10, padx=40, fill=tk.X)
         
         tk.Label(password_frame, text="Password", font=("Arial", 10, "bold"), 
@@ -381,15 +397,21 @@ class AnimatedAuthWindow:
                                  highlightbackground="#ecf0f1")
         password_entry.pack(pady=5, fill=tk.X)
         
+        # Password requirements label
+        req_label = tk.Label(scrollable_frame, 
+                            text="Password must be at least 8 characters with uppercase, lowercase, number, and special character",
+                            font=("Arial", 9), bg="white", fg="#7f8c8d", wraplength=350)
+        req_label.pack(pady=(0, 20), padx=40)
+        
         # Register button
-        register_btn = tk.Button(self.register_frame, text="SIGN UP", 
+        register_btn = tk.Button(scrollable_frame, text="SIGN UP", 
                                 font=("Arial", 12, "bold"), bg="#3498db", fg="white", 
                                 width=20, height=2, bd=0, cursor="hand2", 
                                 command=self.register)
-        register_btn.pack(pady=20)
+        register_btn.pack(pady=10)
         
         # Login prompt
-        login_prompt = tk.Frame(self.register_frame, bg="white")
+        login_prompt = tk.Frame(scrollable_frame, bg="white")
         login_prompt.pack(pady=10)
         
         tk.Label(login_prompt, text="Already have an account?", font=("Arial", 9), 
@@ -398,6 +420,16 @@ class AnimatedAuthWindow:
         tk.Button(login_prompt, text="Sign In", font=("Arial", 9, "bold"), 
                  bg="white", fg="#3498db", bd=0, cursor="hand2",
                  command=self.show_login_form).pack(side=tk.LEFT, padx=5)
+        
+        # Update the canvas scrollregion
+        scrollable_frame.update_idletasks()
+        self.register_canvas.config(scrollregion=self.register_canvas.bbox("all"))
+        
+        # Bind mouse wheel for scrolling
+        self.register_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+    
+    def _on_mousewheel(self, event):
+        self.register_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
     
     def animate_panels(self, target_relx):
         if self.animation_running:
