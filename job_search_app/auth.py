@@ -143,6 +143,7 @@ class AuthenticationManager:
         except Exception as e:
             return False, f"Error updating profile: {str(e)}"
 
+
 class AnimatedAuthWindow:
     def __init__(self, root, auth_manager, on_login_success):
         self.root = root
@@ -229,7 +230,7 @@ class AnimatedAuthWindow:
                               highlightbackground="#ecf0f1")
         email_entry.pack(pady=5, fill=tk.X)
         
-        # Password field
+        # Password field with show/hide button
         password_frame = tk.Frame(self.login_frame, bg="white")
         password_frame.pack(pady=10, padx=40, fill=tk.X)
         
@@ -237,11 +238,39 @@ class AnimatedAuthWindow:
                 bg="white", fg="#34495e").pack(anchor="w")
         
         self.login_password_var = tk.StringVar()
-        password_entry = tk.Entry(password_frame, textvariable=self.login_password_var, 
-                                 font=("Arial", 12), show="•", bd=1, relief=tk.SOLID,
-                                 highlightthickness=1, highlightcolor="#3498db", 
-                                 highlightbackground="#ecf0f1")
-        password_entry.pack(pady=5, fill=tk.X)
+        
+        # Create a frame for password entry and button
+        password_input_frame = tk.Frame(password_frame, bg="white")
+        password_input_frame.pack(pady=5, fill=tk.X)
+        
+        # Password entry field
+        self.login_password_entry = tk.Entry(password_input_frame, 
+                                            textvariable=self.login_password_var, 
+                                            font=("Arial", 12), show="•", bd=1, relief=tk.SOLID,
+                                            highlightthickness=1, highlightcolor="#3498db", 
+                                            highlightbackground="#ecf0f1")
+        self.login_password_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        
+        # Show/hide password button
+        self.login_show_password_btn = tk.Button(password_input_frame, text="👁", 
+                                               font=("Arial", 10), bg="#ecf0f1", fg="#34495e",
+                                               bd=1, relief=tk.SOLID, cursor="hand2",
+                                               width=3, height=1)
+        self.login_show_password_btn.pack(side=tk.RIGHT, padx=(5, 0))
+        
+        # Bind the button to toggle password visibility
+        self.login_show_password_btn.config(
+            command=lambda: self.toggle_password_visibility(self.login_password_entry, 
+                                                           self.login_show_password_btn)
+        )
+        
+        # Add keyboard shortcut (Ctrl+E to toggle password visibility)
+        self.login_password_entry.bind('<Control-e>', 
+            lambda e: self.toggle_password_visibility(self.login_password_entry, 
+                                                     self.login_show_password_btn))
+        self.login_password_entry.bind('<Control-E>', 
+            lambda e: self.toggle_password_visibility(self.login_password_entry, 
+                                                     self.login_show_password_btn))
         
         # Login button
         login_btn = tk.Button(self.login_frame, text="SIGN IN", 
@@ -383,7 +412,7 @@ class AnimatedAuthWindow:
                                  highlightbackground="#ecf0f1")
         location_entry.pack(pady=5, fill=tk.X)
         
-        # Password field - THIS WAS MISSING FROM YOUR ORIGINAL
+        # Password field with show/hide button
         password_frame = tk.Frame(scrollable_frame, bg="white")
         password_frame.pack(pady=10, padx=40, fill=tk.X)
         
@@ -391,11 +420,39 @@ class AnimatedAuthWindow:
                 bg="white", fg="#34495e").pack(anchor="w")
         
         self.register_password_var = tk.StringVar()
-        password_entry = tk.Entry(password_frame, textvariable=self.register_password_var, 
-                                 font=("Arial", 12), show="•", bd=1, relief=tk.SOLID,
-                                 highlightthickness=1, highlightcolor="#3498db", 
-                                 highlightbackground="#ecf0f1")
-        password_entry.pack(pady=5, fill=tk.X)
+        
+        # Create a frame for password entry and button
+        register_password_input_frame = tk.Frame(password_frame, bg="white")
+        register_password_input_frame.pack(pady=5, fill=tk.X)
+        
+        # Password entry field
+        self.register_password_entry = tk.Entry(register_password_input_frame, 
+                                               textvariable=self.register_password_var, 
+                                               font=("Arial", 12), show="•", bd=1, relief=tk.SOLID,
+                                               highlightthickness=1, highlightcolor="#3498db", 
+                                               highlightbackground="#ecf0f1")
+        self.register_password_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        
+        # Show/hide password button
+        self.register_show_password_btn = tk.Button(register_password_input_frame, text="👁", 
+                                                  font=("Arial", 10), bg="#ecf0f1", fg="#34495e",
+                                                  bd=1, relief=tk.SOLID, cursor="hand2",
+                                                  width=3, height=1)
+        self.register_show_password_btn.pack(side=tk.RIGHT, padx=(5, 0))
+        
+        # Bind the button to toggle password visibility
+        self.register_show_password_btn.config(
+            command=lambda: self.toggle_password_visibility(self.register_password_entry, 
+                                                           self.register_show_password_btn)
+        )
+        
+        # Add keyboard shortcut (Ctrl+E to toggle password visibility)
+        self.register_password_entry.bind('<Control-e>', 
+            lambda e: self.toggle_password_visibility(self.register_password_entry, 
+                                                     self.register_show_password_btn))
+        self.register_password_entry.bind('<Control-E>', 
+            lambda e: self.toggle_password_visibility(self.register_password_entry, 
+                                                     self.register_show_password_btn))
         
         # Password requirements label
         req_label = tk.Label(scrollable_frame, 
@@ -430,6 +487,17 @@ class AnimatedAuthWindow:
     
     def _on_mousewheel(self, event):
         self.register_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+    
+    def toggle_password_visibility(self, entry_widget, show_button):
+        """Toggle password visibility between hidden and visible"""
+        if entry_widget.cget('show') == '':
+            entry_widget.config(show='•')  # Hide password
+            show_button.config(text='👁')  # Show open eye icon
+            show_button.config(bg='#ecf0f1', fg='#34495e')
+        else:
+            entry_widget.config(show='')   # Show password
+            show_button.config(text='🙈')  # Show crossed eye icon
+            show_button.config(bg='#3498db', fg='white')
     
     def animate_panels(self, target_relx):
         if self.animation_running:
