@@ -453,4 +453,59 @@ class AnimatedAuthWindow:
         if i % 6 == 0:
             return v, t, p
         elif i % 6 == 1:
-            return q, v
+            return q, v, p
+        elif i % 6 == 2:
+            return p, v, t
+        elif i % 6 == 3:
+            return p, q, v
+        elif i % 6 == 4:
+            return t, p, v
+        else:
+            return v, p, q
+    
+    def login(self):
+        """Handle login button click"""
+        email = self.login_email_var.get().strip()
+        password = self.login_password_var.get()
+        
+        if not email or not password:
+            messagebox.showerror("Error", "Please enter both email and password")
+            return
+        
+        success, message, user_data = self.auth_manager.verify_user(email, password)
+        
+        if success:
+            messagebox.showinfo("Success", message)
+            self.on_login_success(email, user_data)
+        else:
+            messagebox.showerror("Error", message)
+    
+    def register(self):
+        """Handle register button click"""
+        username = self.register_name_var.get().strip()
+        email = self.register_email_var.get().strip()
+        password = self.register_password_var.get()
+        skills_str = self.register_skills_var.get().strip()
+        location = self.register_location_var.get().strip()
+        
+        # Validate inputs
+        if not all([username, email, password, location]):
+            messagebox.showerror("Error", "Please fill in all required fields")
+            return
+        
+        # Parse skills
+        skills = [skill.strip() for skill in skills_str.split(',')] if skills_str else []
+        
+        # Register user
+        success, message = self.auth_manager.register_user(
+            username, email, password, skills, location
+        )
+        
+        if success:
+            messagebox.showinfo("Success", message)
+            # Automatically log in the user after registration
+            success, message, user_data = self.auth_manager.verify_user(email, password)
+            if success:
+                self.on_login_success(email, user_data)
+        else:
+            messagebox.showerror("Error", message)
