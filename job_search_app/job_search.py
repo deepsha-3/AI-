@@ -209,4 +209,154 @@ class JobSearchManager:
                 job_data_with_extra['matching_skills'] = list(user_skills_set.intersection(job_skills))
                 matching_jobs.append(job_data_with_extra)
                 
-                # Add to search
+                # Add to search path visualization
+                search_path.append({
+                    'node': node_id,
+                    'path': current_path,
+                    'match_score': skill_match_count,
+                    'skills': list(user_skills_set.intersection(job_skills))
+                })
+            
+            # Recursively visit neighbors (DFS)
+            for neighbor in graph[node_id]['neighbors']:
+                if len(matching_jobs) < max_results:
+                    dfs(neighbor, current_path, depth + 1)
+        
+        # Start DFS from all job nodes
+        for start_node in graph.keys():
+            if len(matching_jobs) < max_results:
+                dfs(start_node, [], 0)
+        
+        # Store the search paths for display
+        self.search_paths['DFS'] = search_path
+        
+        # Sort by match score (descending)
+        matching_jobs.sort(key=lambda x: x.get('match_score', 0), reverse=True)
+        
+        return matching_jobs[:max_results]
+    
+    def generate_nepal_jobs(self, num_jobs=50):
+        """Generate Nepal-specific job data"""
+        print(f"\nGenerating {num_jobs} Nepal-specific job records...")
+        
+        nepali_cities = [
+            "Kathmandu", "Pokhara", "Lalitpur", "Bhaktapur", "Biratnagar",
+            "Birgunj", "Butwal", "Dharan", "Hetauda", "Janakpur",
+            "Nepalgunj", "Itahari", "Tulsipur", "Bhimdatta", "Kalaiya",
+            "Ghorahi", "Lekhnath", "Kirtipur", "Tilottama", "Birendranagar"
+        ]
+        
+        nepali_areas = {
+            "Kathmandu": ["Thamel", "New Baneshwor", "Patan", "Kalanki", "Koteshwor"],
+            "Pokhara": ["Lakeside", "Bagar", "Chipledhunga", "Prithvi Chowk"],
+            "Lalitpur": ["Pulchowk", "Jawalakhel", "Kumaripati", "Satdobato"],
+            "Bhaktapur": ["Durbar Square", "Suryabinayak", "Changunarayan"],
+            "Biratnagar": ["Rangeli", "Budhiganga", "Kanepokhari"]
+        }
+        
+        nepali_companies = [
+            "F1Soft International", "Verisk Nepal", "Logpoint Nepal",
+            "Leapfrog Technology", "Cotiviti Nepal", "CloudFactory Nepal",
+            "YoungInnovations", "Fusemachines Nepal", "Deerwalk Inc.",
+            "Evolve Cells", "Janaki Tech", "Mantra Ideas", "Sastodeal",
+            "Daraz Nepal", "Foodmandu", "ThamelRemit", "IME Pay",
+            "Nepal Telecom", "Nabil Bank", "Himalayan Bank",
+            "Global IME Bank", "NIC Asia Bank", "Prabhu Bank",
+            "Laxmi Bank", "Sanima Bank", "Citizen Bank"
+        ]
+        
+        job_titles = [
+            "Software Engineer", "Data Scientist", "Web Developer",
+            "DevOps Engineer", "UX Designer", "Product Manager",
+            "Machine Learning Engineer", "Cloud Architect",
+            "Cybersecurity Analyst", "Database Administrator",
+            "Frontend Developer", "Backend Developer", "Full Stack Developer",
+            "Mobile App Developer", "AI Researcher", "Network Engineer",
+            "Systems Analyst", "QA Engineer", "Technical Writer",
+            "Project Manager", "Scrum Master", "Business Analyst",
+            "IT Support Specialist", "Digital Marketing Executive",
+            "Content Writer", "Graphic Designer", "SEO Specialist",
+            "Android Developer", "iOS Developer", "React Native Developer"
+        ]
+        
+        skills = [
+            "python", "java", "javascript", "react", "node.js",
+            "sql", "aws", "docker", "kubernetes", "machine learning",
+            "data analysis", "html", "css", "git", "rest api",
+            "mongodb", "postgresql", "linux", "agile", "scrum",
+            "typescript", "angular", "vue.js", "react native",
+            "c++", "c#", "ruby", "php", "go", "rust",
+            "tableau", "power bi", "excel", "data visualization",
+            "tensorflow", "pytorch", "nlp", "computer vision",
+            "android", "ios", "swift", "kotlin", "flutter",
+            "django", "flask", "spring boot", "laravel",
+            "photoshop", "illustrator", "figma", "adobe xd",
+            "seo", "wordpress", "shopify", "woocommerce"
+        ]
+        
+        jobs_data = []
+        
+        for i in range(num_jobs):
+            title = random.choice(job_titles)
+            num_skills = random.randint(2, 6)
+            job_skills = random.sample(skills, num_skills)
+            city = random.choice(nepali_cities)
+            
+            # Generate address based on city
+            if city in nepali_areas:
+                area = random.choice(nepali_areas[city])
+                address = f"{area}, {city}"
+            else:
+                address = f"Main Road, {city}"
+            
+            # Generate salary in NPR
+            if "Senior" in title or "Lead" in title or "Manager" in title:
+                salary_range = random.randint(80000, 200000)
+            elif "Junior" in title or "Intern" in title:
+                salary_range = random.randint(20000, 50000)
+            else:
+                salary_range = random.randint(50000, 120000)
+            
+            salary = f"NPR {salary_range:,}/month"
+            company = random.choice(nepali_companies)
+            
+            jobs_data.append({
+                'Job Title': title,
+                'Required Skills': ', '.join(job_skills),
+                'Location': city,
+                'Salary': salary,
+                'Company': company,
+                'Address': address
+            })
+        
+        self.jobs = pd.DataFrame(jobs_data)
+        if self.save_jobs():
+            print(f"Successfully generated {num_jobs} Nepal-specific job records in {self.jobs_file}")
+            return num_jobs
+        else:
+            print("Error: Could not save jobs to file")
+            return 0
+    
+    def export_to_csv(self, jobs_data, filename=None):
+        """Export job search results to CSV file on desktop"""
+        try:
+            if filename is None:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"job_search_results_{timestamp}.csv"
+            
+            # Get desktop path
+            desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop', filename)
+            
+            # Convert to DataFrame
+            df = pd.DataFrame(jobs_data)
+            
+            # Save to CSV
+            df.to_csv(desktop_path, index=False, encoding='utf-8')
+            
+            return True, desktop_path
+        except Exception as e:
+            return False, str(e)
+    
+    def get_search_paths(self, algorithm):
+        """Get search paths for a specific algorithm"""
+        return self.search_paths.get(algorithm, [])
