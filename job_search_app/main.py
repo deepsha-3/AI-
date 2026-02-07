@@ -1,8 +1,10 @@
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import messagebox, ttk, filedialog
 from auth import AuthenticationManager, AnimatedAuthWindow
 from job_search import JobSearchManager
 import pandas as pd
+import os
+from datetime import datetime
 
 class MainApplication:
     def __init__(self):
@@ -11,9 +13,11 @@ class MainApplication:
         self.auth_manager = AuthenticationManager()
         self.job_manager = JobSearchManager()
         self.current_user = None
+        self.current_results = []
+        self.current_algorithm = ""
         
         # Center the window
-        self.center_window(1000, 600)
+        self.center_window(1200, 700)
         
         self.show_auth_window()
         
@@ -53,42 +57,38 @@ class MainApplication:
         
     def setup_main_ui(self):
         # Main container
-        main_container = tk.Frame(self.root, bg="#2c3e50")
+        main_container = tk.Frame(self.root, bg="#0a1929")
         main_container.pack(fill=tk.BOTH, expand=True)
         
         # Header
-        header_frame = tk.Frame(main_container, bg="#3498db", height=60)
+        header_frame = tk.Frame(main_container, bg="#1e3a5f", height=60)
         header_frame.pack(fill=tk.X)
         header_frame.pack_propagate(False)
         
-        tk.Label(header_frame, text="Job Matching Assistant", 
-                font=("Arial", 20, "bold"), bg="#3498db", fg="white").pack(side=tk.LEFT, padx=20)
+        tk.Label(header_frame, text="🇳🇵 Job Matching Assistant - Nepal", 
+                font=("Arial", 20, "bold"), bg="#1e3a5f", fg="white").pack(side=tk.LEFT, padx=20)
         
         # User info on right
-        user_info = tk.Frame(header_frame, bg="#3498db")
+        user_info = tk.Frame(header_frame, bg="#1e3a5f")
         user_info.pack(side=tk.RIGHT, padx=20)
         
         tk.Label(user_info, text=f"Welcome, {self.user_data['username']}", 
-                font=("Arial", 12), bg="#3498db", fg="white").pack(side=tk.LEFT, padx=5)
+                font=("Arial", 12), bg="#1e3a5f", fg="white").pack(side=tk.LEFT, padx=5)
         
         tk.Button(user_info, text="Logout", command=self.logout,
-                 bg="#e74c3c", fg="white", bd=0, padx=10, cursor="hand2").pack(side=tk.LEFT, padx=5)
+                 bg="#c44536", fg="white", bd=0, padx=10, cursor="hand2").pack(side=tk.LEFT, padx=5)
         
         # Main content area
-        content_frame = tk.Frame(main_container, bg="#ecf0f1")
+        content_frame = tk.Frame(main_container, bg="#e8edf5")
         content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Left panel - User profile and search
         left_panel = tk.Frame(content_frame, bg="white", relief=tk.RAISED, bd=1)
         left_panel.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 10), expand=True)
         
-        # Right panel - Search results
+        # Right panel - Search results and path visualization
         right_panel = tk.Frame(content_frame, bg="white", relief=tk.RAISED, bd=1)
         right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-        
-        # Configure grid weights for panels
-        content_frame.columnconfigure(0, weight=1)
-        content_frame.columnconfigure(1, weight=1)
         
         # Create left panel content
         self.create_profile_section(left_panel)
@@ -99,69 +99,85 @@ class MainApplication:
         
     def create_profile_section(self, parent):
         profile_frame = tk.LabelFrame(parent, text="Your Profile", font=("Arial", 12, "bold"),
-                                     bg="white", fg="#2c3e50", padx=10, pady=10)
+                                     bg="white", fg="#1e3a5f", padx=10, pady=10)
         profile_frame.pack(fill=tk.X, padx=10, pady=(10, 5))
         
         # Display user info
         tk.Label(profile_frame, text=f"Email: {self.current_user}", 
-                font=("Arial", 10), bg="white", fg="#34495e", anchor="w").pack(fill=tk.X, pady=2)
+                font=("Arial", 10), bg="white", fg="#1e3a5f", anchor="w").pack(fill=tk.X, pady=2)
         tk.Label(profile_frame, text=f"Location: {self.user_data.get('location', 'Not set')}", 
-                font=("Arial", 10), bg="white", fg="#34495e", anchor="w").pack(fill=tk.X, pady=2)
+                font=("Arial", 10), bg="white", fg="#1e3a5f", anchor="w").pack(fill=tk.X, pady=2)
         
         # Skills display
         skills_text = self.user_data.get('skills', [])
         skills_str = ', '.join(skills_text) if isinstance(skills_text, list) else skills_text
         tk.Label(profile_frame, text=f"Skills: {skills_str}", 
-                font=("Arial", 10), bg="white", fg="#34495e", anchor="w", wraplength=300).pack(fill=tk.X, pady=2)
+                font=("Arial", 10), bg="white", fg="#1e3a5f", anchor="w", wraplength=300).pack(fill=tk.X, pady=2)
         
         # Update profile button
         tk.Button(profile_frame, text="Update Profile", command=self.update_profile,
-                 bg="#3498db", fg="white", bd=0, padx=10, cursor="hand2").pack(pady=(10, 0))
+                 bg="#3d5a80", fg="white", bd=0, padx=10, cursor="hand2").pack(pady=(10, 0))
     
     def create_search_section(self, parent):
         search_frame = tk.LabelFrame(parent, text="Job Search", font=("Arial", 12, "bold"),
-                                    bg="white", fg="#2c3e50", padx=10, pady=10)
+                                    bg="white", fg="#1e3a5f", padx=10, pady=10)
         search_frame.pack(fill=tk.X, padx=10, pady=5)
         
         # Algorithm selection
         tk.Label(search_frame, text="Search Algorithm:", 
-                font=("Arial", 10, "bold"), bg="white", fg="#34495e").pack(anchor="w", pady=(0, 5))
+                font=("Arial", 10, "bold"), bg="white", fg="#1e3a5f").pack(anchor="w", pady=(0, 5))
         
         self.algorithm_var = tk.StringVar(value="BFS")
         algorithm_frame = tk.Frame(search_frame, bg="white")
         algorithm_frame.pack(fill=tk.X, pady=(0, 10))
         
         tk.Radiobutton(algorithm_frame, text="BFS (Breadth-First Search)", 
-                      variable=self.algorithm_var, value="BFS", bg="white").pack(side=tk.LEFT, padx=(0, 20))
+                      variable=self.algorithm_var, value="BFS", bg="white", fg="#1e3a5f").pack(side=tk.LEFT, padx=(0, 20))
         tk.Radiobutton(algorithm_frame, text="DFS (Depth-First Search)", 
-                      variable=self.algorithm_var, value="DFS", bg="white").pack(side=tk.LEFT)
+                      variable=self.algorithm_var, value="DFS", bg="white", fg="#1e3a5f").pack(side=tk.LEFT)
         
         # Search button
-        search_btn = tk.Button(search_frame, text="Search Matching Jobs", 
-                              command=self.search_jobs, bg="#2ecc71", fg="white",
+        search_btn = tk.Button(search_frame, text="🔍 Search Matching Jobs", 
+                              command=self.search_jobs, bg="#2d4a70", fg="white",
                               font=("Arial", 11, "bold"), bd=0, padx=20, pady=8, cursor="hand2")
         search_btn.pack(pady=10)
         
-        # Generate dummy data button
-        dummy_btn = tk.Button(search_frame, text="Generate Dummy Jobs", 
-                             command=self.generate_dummy_jobs, bg="#e67e22", fg="white",
+        # Generate Nepal jobs button
+        nepal_btn = tk.Button(search_frame, text="🇳🇵 Generate Nepal Jobs", 
+                             command=self.generate_nepal_jobs, bg="#1e3a5f", fg="white",
                              bd=0, padx=20, pady=5, cursor="hand2")
-        dummy_btn.pack(pady=(5, 0))
+        nepal_btn.pack(pady=(5, 0))
         
         # View all jobs button
-        view_all_btn = tk.Button(search_frame, text="View All Jobs", 
-                                command=self.view_all_jobs, bg="#9b59b6", fg="white",
+        view_all_btn = tk.Button(search_frame, text="📋 View All Jobs", 
+                                command=self.view_all_jobs, bg="#3d5a80", fg="white",
                                 bd=0, padx=20, pady=5, cursor="hand2")
         view_all_btn.pack(pady=5)
+        
+        # Download CSV button
+        download_btn = tk.Button(search_frame, text="📥 Download as CSV", 
+                                command=self.download_results, bg="#27ae60", fg="white",
+                                bd=0, padx=20, pady=5, cursor="hand2")
+        download_btn.pack(pady=5)
+        
+        # Show path button
+        path_btn = tk.Button(search_frame, text="🛤️ Show Search Path", 
+                            command=self.show_search_path, bg="#8e44ad", fg="white",
+                            bd=0, padx=20, pady=5, cursor="hand2")
+        path_btn.pack(pady=5)
     
     def create_results_section(self, parent):
-        # Create frame for treeview and scrollbar
-        results_frame = tk.Frame(parent, bg="white")
-        results_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        # Create notebook for tabs
+        self.notebook = ttk.Notebook(parent)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        # Create treeview
-        columns = ("Job Title", "Required Skills", "Location", "Salary", "Company")
-        self.tree = ttk.Treeview(results_frame, columns=columns, show="headings", selectmode="browse")
+        # Tab 1: Job Results
+        results_tab = tk.Frame(self.notebook, bg="white")
+        self.notebook.add(results_tab, text="Job Results")
+        
+        # Create treeview in results tab
+        columns = ("Job Title", "Required Skills", "Location", "Salary", "Company", "Address")
+        self.tree = ttk.Treeview(results_tab, columns=columns, show="headings", selectmode="browse")
         
         # Define headings
         for col in columns:
@@ -174,18 +190,32 @@ class MainApplication:
         self.tree.column("Location", width=100)
         self.tree.column("Salary", width=100)
         self.tree.column("Company", width=150)
+        self.tree.column("Address", width=150)
         
         # Create scrollbar
-        scrollbar = ttk.Scrollbar(results_frame, orient=tk.VERTICAL, command=self.tree.yview)
+        scrollbar = ttk.Scrollbar(results_tab, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscrollcommand=scrollbar.set)
         
         # Pack treeview and scrollbar
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
+        # Tab 2: Search Path Visualization
+        path_tab = tk.Frame(self.notebook, bg="white")
+        self.notebook.add(path_tab, text="Search Path")
+        
+        # Create text widget for path visualization
+        self.path_text = tk.Text(path_tab, wrap=tk.WORD, bg="white", fg="#1e3a5f", 
+                                font=("Courier", 10))
+        path_scrollbar = tk.Scrollbar(path_tab, command=self.path_text.yview)
+        self.path_text.configure(yscrollcommand=path_scrollbar.set)
+        
+        self.path_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        path_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
         # Results info label
         self.results_label = tk.Label(parent, text="No search performed yet", 
-                                     font=("Arial", 10), bg="white", fg="#7f8c8d")
+                                     font=("Arial", 10), bg="white", fg="#5d7a9e")
         self.results_label.pack(pady=(0, 10))
     
     def search_jobs(self):
@@ -205,6 +235,9 @@ class MainApplication:
         for item in self.tree.get_children():
             self.tree.delete(item)
         
+        # Clear path text
+        self.path_text.delete(1.0, tk.END)
+        
         # Search for jobs
         if algorithm == "BFS":
             results = self.job_manager.search_jobs_bfs(skills, location)
@@ -212,6 +245,10 @@ class MainApplication:
         else:
             results = self.job_manager.search_jobs_dfs(skills, location)
             algorithm_name = "DFS (Depth-First Search)"
+        
+        # Store results
+        self.current_results = results
+        self.current_algorithm = algorithm
         
         # Display results
         self.display_results(results, algorithm_name)
@@ -228,17 +265,84 @@ class MainApplication:
                 job['Required Skills'],
                 job['Location'],
                 job['Salary'],
-                job['Company']
+                job['Company'],
+                job.get('Address', 'N/A')
             ))
+        
+        # Show match scores and skills in path tab
+        self.path_text.insert(tk.END, f"Search Algorithm: {algorithm_name}\n")
+        self.path_text.insert(tk.END, f"Location: {self.user_data['location']}\n")
+        self.path_text.insert(tk.END, f"Skills: {', '.join(self.user_data['skills'])}\n")
+        self.path_text.insert(tk.END, "="*60 + "\n\n")
+        
+        for i, job in enumerate(results[:10], 1):  # Show first 10 jobs with details
+            self.path_text.insert(tk.END, f"{i}. {job['Job Title']} at {job['Company']}\n")
+            self.path_text.insert(tk.END, f"   Location: {job['Location']} ({job.get('Address', 'N/A')})\n")
+            self.path_text.insert(tk.END, f"   Matching Skills: {', '.join(job.get('matching_skills', []))}\n")
+            self.path_text.insert(tk.END, f"   Match Score: {job.get('match_score', 0)}/5\n")
+            self.path_text.insert(tk.END, f"   Salary: {job['Salary']}\n")
+            self.path_text.insert(tk.END, "-"*50 + "\n\n")
         
         self.results_label.config(
             text=f"Found {len(results)} matching jobs using {algorithm_name}"
         )
+        self.notebook.select(0)  # Switch to results tab
+    
+    def show_search_path(self):
+        if not self.current_results:
+            messagebox.showwarning("No Search", "Please perform a search first to see the path.")
+            return
+        
+        # Get search paths for current algorithm
+        search_paths = self.job_manager.get_search_paths(self.current_algorithm)
+        
+        if not search_paths:
+            self.path_text.delete(1.0, tk.END)
+            self.path_text.insert(tk.END, "No search path data available.\n")
+            self.path_text.insert(tk.END, "Please perform a new search to generate path data.\n")
+            return
+        
+        self.path_text.delete(1.0, tk.END)
+        self.path_text.insert(tk.END, f"🔍 {self.current_algorithm} SEARCH PATH VISUALIZATION\n")
+        self.path_text.insert(tk.END, "="*60 + "\n\n")
+        
+        for i, path_info in enumerate(search_paths[:20], 1):  # Show first 20 paths
+            node_id = path_info['node']
+            path = path_info['path']
+            match_score = path_info['match_score']
+            skills = path_info['skills']
+            
+            self.path_text.insert(tk.END, f"Path {i} (Score: {match_score}/5)\n")
+            self.path_text.insert(tk.END, f"Matching Skills: {', '.join(skills)}\n")
+            self.path_text.insert(tk.END, "Path: ")
+            
+            for j, node in enumerate(path):
+                if j == len(path) - 1:
+                    self.path_text.insert(tk.END, f"{node} ★\n", "highlight")
+                else:
+                    self.path_text.insert(tk.END, f"{node} → ")
+            
+            self.path_text.insert(tk.END, "\n")
+            
+            # Get job details for the final node
+            node_num = int(node_id.split('_')[1])
+            if node_num < len(self.job_manager.jobs):
+                job = self.job_manager.jobs.iloc[node_num]
+                self.path_text.insert(tk.END, f"Final Job: {job['Job Title']} at {job['Company']}\n")
+                self.path_text.insert(tk.END, f"Location: {job['Location']}\n")
+                self.path_text.insert(tk.END, f"Required Skills: {job['Required Skills']}\n")
+            
+            self.path_text.insert(tk.END, "-"*50 + "\n\n")
+        
+        # Configure text tag for highlighting
+        self.path_text.tag_configure("highlight", foreground="#c44536", font=("Courier", 10, "bold"))
+        
+        self.notebook.select(1)  # Switch to path tab
     
     def update_profile(self):
         dialog = tk.Toplevel(self.root)
         dialog.title("Update Profile")
-        dialog.geometry("400x300")
+        dialog.geometry("400x350")
         dialog.resizable(False, False)
         dialog.transient(self.root)
         dialog.grab_set()
@@ -250,27 +354,38 @@ class MainApplication:
         dialog.geometry(f"+{x}+{y}")
         
         # Content
-        main_frame = tk.Frame(dialog, padx=20, pady=20)
+        main_frame = tk.Frame(dialog, padx=20, pady=20, bg="white")
         main_frame.pack(fill=tk.BOTH, expand=True)
         
         tk.Label(main_frame, text="Update Your Profile", 
-                font=("Arial", 16, "bold")).pack(pady=(0, 20))
+                font=("Arial", 16, "bold"), bg="white", fg="#1e3a5f").pack(pady=(0, 20))
         
         # Skills input
         tk.Label(main_frame, text="Your Skills (comma-separated):", 
-                font=("Arial", 10)).pack(anchor="w", pady=(5, 0))
+                font=("Arial", 10), bg="white", fg="#1e3a5f").pack(anchor="w", pady=(5, 0))
         
         skills_var = tk.StringVar(value=', '.join(self.user_data.get('skills', [])))
-        skills_entry = tk.Entry(main_frame, textvariable=skills_var, width=40)
+        skills_entry = tk.Entry(main_frame, textvariable=skills_var, width=40, 
+                               highlightthickness=1, highlightcolor="#3d5a80")
         skills_entry.pack(pady=(0, 10), fill=tk.X)
         
-        # Location input
-        tk.Label(main_frame, text="Your Location:", 
-                font=("Arial", 10)).pack(anchor="w", pady=(5, 0))
+        # Location input with Nepal cities suggestion
+        tk.Label(main_frame, text="Your Location (Nepal City):", 
+                font=("Arial", 10), bg="white", fg="#1e3a5f").pack(anchor="w", pady=(5, 0))
         
         location_var = tk.StringVar(value=self.user_data.get('location', ''))
-        location_entry = tk.Entry(main_frame, textvariable=location_var, width=40)
-        location_entry.pack(pady=(0, 20), fill=tk.X)
+        
+        # Create a dropdown for Nepal cities
+        nepal_cities = [
+            "Kathmandu", "Pokhara", "Lalitpur", "Bhaktapur", "Biratnagar",
+            "Birgunj", "Butwal", "Dharan", "Hetauda", "Janakpur",
+            "Nepalgunj", "Itahari", "Tulsipur", "Bhimdatta", "Kalaiya",
+            "Ghorahi", "Lekhnath", "Kirtipur", "Tilottama", "Birendranagar"
+        ]
+        
+        location_combobox = ttk.Combobox(main_frame, textvariable=location_var, 
+                                        values=nepal_cities, width=38)
+        location_combobox.pack(pady=(0, 20), fill=tk.X)
         
         def save_profile():
             new_skills = [skill.strip() for skill in skills_var.get().split(',')]
@@ -298,17 +413,17 @@ class MainApplication:
                 messagebox.showerror("Error", message)
         
         # Buttons
-        button_frame = tk.Frame(main_frame)
+        button_frame = tk.Frame(main_frame, bg="white")
         button_frame.pack(fill=tk.X, pady=(10, 0))
         
         tk.Button(button_frame, text="Save", command=save_profile,
-                 bg="#3498db", fg="white", bd=0, padx=20).pack(side=tk.LEFT, padx=(0, 10))
+                 bg="#3d5a80", fg="white", bd=0, padx=20).pack(side=tk.LEFT, padx=(0, 10))
         tk.Button(button_frame, text="Cancel", command=dialog.destroy,
                  bg="#95a5a6", fg="white", bd=0, padx=20).pack(side=tk.LEFT)
     
-    def generate_dummy_jobs(self):
-        count = self.job_manager.generate_dummy_data()
-        messagebox.showinfo("Success", f"Generated {count} dummy job entries in jobs.csv")
+    def generate_nepal_jobs(self):
+        count = self.job_manager.generate_nepal_jobs()
+        messagebox.showinfo("Success", f"Generated {count} Nepal-specific job entries in jobs.csv")
     
     def view_all_jobs(self):
         all_jobs = self.job_manager.get_all_jobs()
@@ -317,12 +432,70 @@ class MainApplication:
         for item in self.tree.get_children():
             self.tree.delete(item)
         
+        # Clear path text
+        self.path_text.delete(1.0, tk.END)
+        
         # Display all jobs
-        self.display_results(all_jobs, "All Available Jobs")
+        for job in all_jobs:
+            self.tree.insert("", "end", values=(
+                job['Job Title'],
+                job['Required Skills'],
+                job['Location'],
+                job['Salary'],
+                job['Company'],
+                job.get('Address', 'N/A')
+            ))
+        
+        self.results_label.config(text=f"Showing {len(all_jobs)} total jobs")
+        self.current_results = all_jobs
+    
+    def download_results(self):
+        if not self.current_results:
+            messagebox.showwarning("No Results", "No search results to download. Please perform a search first.")
+            return
+        
+        # Ask user for filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        default_filename = f"job_results_{timestamp}.csv"
+        
+        # Open file dialog for saving
+        desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop')
+        file_path = filedialog.asksaveasfilename(
+            initialdir=desktop_path,
+            initialfile=default_filename,
+            defaultextension=".csv",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
+        )
+        
+        if file_path:
+            try:
+                # Prepare data for CSV
+                export_data = []
+                for job in self.current_results:
+                    export_data.append({
+                        'Job Title': job.get('Job Title', ''),
+                        'Required Skills': job.get('Required Skills', ''),
+                        'Location': job.get('Location', ''),
+                        'Salary': job.get('Salary', ''),
+                        'Company': job.get('Company', ''),
+                        'Address': job.get('Address', 'N/A'),
+                        'Match Score': job.get('match_score', 'N/A'),
+                        'Matching Skills': ', '.join(job.get('matching_skills', [])),
+                        'Search Algorithm': self.current_algorithm if hasattr(self, 'current_algorithm') else 'N/A'
+                    })
+                
+                # Convert to DataFrame and save
+                df = pd.DataFrame(export_data)
+                df.to_csv(file_path, index=False, encoding='utf-8')
+                
+                messagebox.showinfo("Success", f"Results exported successfully to:\n{file_path}")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to export results: {str(e)}")
     
     def logout(self):
         self.current_user = None
         self.user_data = None
+        self.current_results = []
         self.show_auth_window()
     
     def run(self):
@@ -331,3 +504,4 @@ class MainApplication:
 if __name__ == "__main__":
     app = MainApplication()
     app.run()
+    
