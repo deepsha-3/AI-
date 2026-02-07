@@ -174,14 +174,14 @@ class AnimatedAuthWindow:
     
     def setup_ui(self):
         self.root.title("Job Matching Assistant - Authentication")
-        self.root.configure(bg="#2c3e50")
+        self.root.configure(bg="#0a1929")
         
         # Create canvas for animated background
-        self.canvas = tk.Canvas(self.root, bg="#2c3e50", highlightthickness=0)
+        self.canvas = tk.Canvas(self.root, bg="#0a1929", highlightthickness=0)
         self.canvas.pack(fill=tk.BOTH, expand=True)
         
         # Main container
-        self.main_container = tk.Frame(self.canvas, bg="#2c3e50")
+        self.main_container = tk.Frame(self.canvas, bg="#0a1929")
         self.main_container.place(relx=0.5, rely=0.5, anchor=tk.CENTER, width=800, height=500)
         
         # Create the animated panels
@@ -192,11 +192,11 @@ class AnimatedAuthWindow:
     
     def create_panels(self):
         # Login form - initially visible
-        self.login_frame = tk.Frame(self.main_container, bg="white", relief=tk.FLAT, bd=0)
+        self.login_frame = tk.Frame(self.main_container, bg="#ffffff", relief=tk.FLAT, bd=0)
         self.login_frame.place(relx=0, rely=0, relwidth=0.5, relheight=1)
         
         # Welcome panel: initially on the right side
-        self.welcome_frame = tk.Frame(self.main_container, bg="#3498db", relief=tk.FLAT, bd=0)
+        self.welcome_frame = tk.Frame(self.main_container, bg="#1e3a5f", relief=tk.FLAT, bd=0)
         self.welcome_frame.place(relx=0.5, rely=0, relwidth=0.5, relheight=1)
         
         # Create login form content
@@ -206,54 +206,54 @@ class AnimatedAuthWindow:
         self.create_welcome_panel()
     
     def create_login_form(self):
-        # Title
+        # Title with new color theme
         title_label = tk.Label(self.login_frame, text="Welcome Back!", 
-                              font=("Arial", 24, "bold"), bg="white", fg="#2c3e50")
+                              font=("Arial", 24, "bold"), bg="#ffffff", fg="#1e3a5f")
         title_label.pack(pady=(40, 10))
         
         subtitle_label = tk.Label(self.login_frame, 
                                  text="Enter your credentials to access job matching", 
-                                 font=("Arial", 10), bg="white", fg="#7f8c8d")
+                                 font=("Arial", 10), bg="#ffffff", fg="#5d7a9e")
         subtitle_label.pack(pady=(0, 40))
         
         # Email field
-        email_frame = tk.Frame(self.login_frame, bg="white")
+        email_frame = tk.Frame(self.login_frame, bg="#ffffff")
         email_frame.pack(pady=10, padx=40, fill=tk.X)
         
         tk.Label(email_frame, text="Email", font=("Arial", 10, "bold"), 
-                bg="white", fg="#34495e").pack(anchor="w")
+                bg="#ffffff", fg="#1e3a5f").pack(anchor="w")
         
         self.login_email_var = tk.StringVar()
         email_entry = tk.Entry(email_frame, textvariable=self.login_email_var, 
                               font=("Arial", 12), bd=1, relief=tk.SOLID, 
-                              highlightthickness=1, highlightcolor="#3498db", 
-                              highlightbackground="#ecf0f1")
+                              highlightthickness=1, highlightcolor="#3d5a80", 
+                              highlightbackground="#e8edf5")
         email_entry.pack(pady=5, fill=tk.X)
         
         # Password field with show/hide button
-        password_frame = tk.Frame(self.login_frame, bg="white")
+        password_frame = tk.Frame(self.login_frame, bg="#ffffff")
         password_frame.pack(pady=10, padx=40, fill=tk.X)
         
         tk.Label(password_frame, text="Password", font=("Arial", 10, "bold"), 
-                bg="white", fg="#34495e").pack(anchor="w")
+                bg="#ffffff", fg="#1e3a5f").pack(anchor="w")
         
         self.login_password_var = tk.StringVar()
         
         # Create a frame for password entry and button
-        password_input_frame = tk.Frame(password_frame, bg="white")
+        password_input_frame = tk.Frame(password_frame, bg="#ffffff")
         password_input_frame.pack(pady=5, fill=tk.X)
         
         # Password entry field
         self.login_password_entry = tk.Entry(password_input_frame, 
                                             textvariable=self.login_password_var, 
                                             font=("Arial", 12), show="•", bd=1, relief=tk.SOLID,
-                                            highlightthickness=1, highlightcolor="#3498db", 
-                                            highlightbackground="#ecf0f1")
+                                            highlightthickness=1, highlightcolor="#3d5a80", 
+                                            highlightbackground="#e8edf5")
         self.login_password_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
         
         # Show/hide password button
         self.login_show_password_btn = tk.Button(password_input_frame, text="👁", 
-                                               font=("Arial", 10), bg="#ecf0f1", fg="#34495e",
+                                               font=("Arial", 10), bg="#e8edf5", fg="#1e3a5f",
                                                bd=1, relief=tk.SOLID, cursor="hand2",
                                                width=3, height=1)
         self.login_show_password_btn.pack(side=tk.RIGHT, padx=(5, 0))
@@ -272,39 +272,41 @@ class AnimatedAuthWindow:
             lambda e: self.toggle_password_visibility(self.login_password_entry, 
                                                      self.login_show_password_btn))
         
-        # Login button
+        # Login button with new color
         login_btn = tk.Button(self.login_frame, text="SIGN IN", 
-                             font=("Arial", 12, "bold"), bg="#3498db", fg="white", 
+                             font=("Arial", 12, "bold"), bg="#3d5a80", fg="white", 
                              width=20, height=2, bd=0, cursor="hand2", 
+                             activebackground="#2d4a70", activeforeground="white",
                              command=self.login)
         login_btn.pack(pady=20)
         
         # Register prompt
-        register_prompt = tk.Frame(self.login_frame, bg="white")
+        register_prompt = tk.Frame(self.login_frame, bg="#ffffff")
         register_prompt.pack(pady=10)
         
         tk.Label(register_prompt, text="Don't have an account?", font=("Arial", 9), 
-                bg="white", fg="#7f8c8d").pack(side=tk.LEFT)
+                bg="#ffffff", fg="#5d7a9e").pack(side=tk.LEFT)
         
         tk.Button(register_prompt, text="Sign Up", font=("Arial", 9, "bold"), 
-                 bg="white", fg="#3498db", bd=0, cursor="hand2",
+                 bg="#ffffff", fg="#3d5a80", bd=0, cursor="hand2",
                  command=self.show_register_form).pack(side=tk.LEFT, padx=5)
     
     def create_welcome_panel(self):
-        # Title
+        # Title with new color theme
         title_label = tk.Label(self.welcome_frame, text="New Here?", 
-                              font=("Arial", 24, "bold"), bg="#3498db", fg="white")
+                              font=("Arial", 24, "bold"), bg="#1e3a5f", fg="white")
         title_label.pack(pady=(120, 10))
         
         subtitle_label = tk.Label(self.welcome_frame, 
                                  text="Register to start matching with your dream jobs", 
-                                 font=("Arial", 10), bg="#3498db", fg="white")
+                                 font=("Arial", 10), bg="#1e3a5f", fg="white")
         subtitle_label.pack(pady=(0, 30))
         
-        # Register button
+        # Register button with new color
         register_btn = tk.Button(self.welcome_frame, text="SIGN UP", 
-                                font=("Arial", 12, "bold"), bg="white", fg="#3498db", 
-                                width=20, height=2, bd=0, cursor="hand2", 
+                                font=("Arial", 12, "bold"), bg="#3d5a80", fg="white", 
+                                width=20, height=2, bd=0, cursor="hand2",
+                                activebackground="#2d4a70", activeforeground="white",
                                 command=self.show_register_form)
         register_btn.pack(pady=20)
     
@@ -320,7 +322,7 @@ class AnimatedAuthWindow:
         if hasattr(self, 'register_frame'):
             self.register_frame.destroy()
         
-        self.register_frame = tk.Frame(self.main_container, bg="white", relief=tk.FLAT, bd=0)
+        self.register_frame = tk.Frame(self.main_container, bg="#ffffff", relief=tk.FLAT, bd=0)
         self.register_frame.place(relx=0.5, rely=0, relwidth=0.5, relheight=1)
         
         # Create register form content - USING A SCROLLABLE FRAME
@@ -330,9 +332,9 @@ class AnimatedAuthWindow:
     
     def create_register_form_content(self):
         # Create a canvas and scrollbar for the register form
-        self.register_canvas = tk.Canvas(self.register_frame, bg="white", highlightthickness=0)
+        self.register_canvas = tk.Canvas(self.register_frame, bg="#ffffff", highlightthickness=0)
         scrollbar = tk.Scrollbar(self.register_frame, orient="vertical", command=self.register_canvas.yview)
-        scrollable_frame = tk.Frame(self.register_canvas, bg="white")
+        scrollable_frame = tk.Frame(self.register_canvas, bg="#ffffff")
         
         scrollable_frame.bind(
             "<Configure>",
@@ -348,94 +350,94 @@ class AnimatedAuthWindow:
         
         # Title
         title_label = tk.Label(scrollable_frame, text="Create Account", 
-                              font=("Arial", 24, "bold"), bg="white", fg="#2c3e50")
+                              font=("Arial", 24, "bold"), bg="#ffffff", fg="#1e3a5f")
         title_label.pack(pady=(40, 10))
         
         subtitle_label = tk.Label(scrollable_frame, 
                                  text="Fill in your details to get started", 
-                                 font=("Arial", 10), bg="white", fg="#7f8c8d")
+                                 font=("Arial", 10), bg="#ffffff", fg="#5d7a9e")
         subtitle_label.pack(pady=(0, 20))
         
         # Name field
-        name_frame = tk.Frame(scrollable_frame, bg="white")
+        name_frame = tk.Frame(scrollable_frame, bg="#ffffff")
         name_frame.pack(pady=10, padx=40, fill=tk.X)
         
         tk.Label(name_frame, text="Username", font=("Arial", 10, "bold"), 
-                bg="white", fg="#34495e").pack(anchor="w")
+                bg="#ffffff", fg="#1e3a5f").pack(anchor="w")
         
         self.register_name_var = tk.StringVar()
         name_entry = tk.Entry(name_frame, textvariable=self.register_name_var, 
                              font=("Arial", 12), bd=1, relief=tk.SOLID, 
-                             highlightthickness=1, highlightcolor="#3498db", 
-                             highlightbackground="#ecf0f1")
+                             highlightthickness=1, highlightcolor="#3d5a80", 
+                             highlightbackground="#e8edf5")
         name_entry.pack(pady=5, fill=tk.X)
         
         # Email field
-        email_frame = tk.Frame(scrollable_frame, bg="white")
+        email_frame = tk.Frame(scrollable_frame, bg="#ffffff")
         email_frame.pack(pady=10, padx=40, fill=tk.X)
         
         tk.Label(email_frame, text="Email", font=("Arial", 10, "bold"), 
-                bg="white", fg="#34495e").pack(anchor="w")
+                bg="#ffffff", fg="#1e3a5f").pack(anchor="w")
         
         self.register_email_var = tk.StringVar()
         email_entry = tk.Entry(email_frame, textvariable=self.register_email_var, 
                               font=("Arial", 12), bd=1, relief=tk.SOLID, 
-                              highlightthickness=1, highlightcolor="#3498db", 
-                              highlightbackground="#ecf0f1")
+                              highlightthickness=1, highlightcolor="#3d5a80", 
+                              highlightbackground="#e8edf5")
         email_entry.pack(pady=5, fill=tk.X)
         
         # Skills field
-        skills_frame = tk.Frame(scrollable_frame, bg="white")
+        skills_frame = tk.Frame(scrollable_frame, bg="#ffffff")
         skills_frame.pack(pady=10, padx=40, fill=tk.X)
         
         tk.Label(skills_frame, text="Skills (comma-separated)", font=("Arial", 10, "bold"), 
-                bg="white", fg="#34495e").pack(anchor="w")
+                bg="#ffffff", fg="#1e3a5f").pack(anchor="w")
         
         self.register_skills_var = tk.StringVar()
         skills_entry = tk.Entry(skills_frame, textvariable=self.register_skills_var, 
                                font=("Arial", 12), bd=1, relief=tk.SOLID,
-                               highlightthickness=1, highlightcolor="#3498db", 
-                               highlightbackground="#ecf0f1")
+                               highlightthickness=1, highlightcolor="#3d5a80", 
+                               highlightbackground="#e8edf5")
         skills_entry.pack(pady=5, fill=tk.X)
         
         # Location field
-        location_frame = tk.Frame(scrollable_frame, bg="white")
+        location_frame = tk.Frame(scrollable_frame, bg="#ffffff")
         location_frame.pack(pady=10, padx=40, fill=tk.X)
         
         tk.Label(location_frame, text="Location", font=("Arial", 10, "bold"), 
-                bg="white", fg="#34495e").pack(anchor="w")
+                bg="#ffffff", fg="#1e3a5f").pack(anchor="w")
         
         self.register_location_var = tk.StringVar()
         location_entry = tk.Entry(location_frame, textvariable=self.register_location_var, 
                                  font=("Arial", 12), bd=1, relief=tk.SOLID,
-                                 highlightthickness=1, highlightcolor="#3498db", 
-                                 highlightbackground="#ecf0f1")
+                                 highlightthickness=1, highlightcolor="#3d5a80", 
+                                 highlightbackground="#e8edf5")
         location_entry.pack(pady=5, fill=tk.X)
         
         # Password field with show/hide button
-        password_frame = tk.Frame(scrollable_frame, bg="white")
+        password_frame = tk.Frame(scrollable_frame, bg="#ffffff")
         password_frame.pack(pady=10, padx=40, fill=tk.X)
         
         tk.Label(password_frame, text="Password", font=("Arial", 10, "bold"), 
-                bg="white", fg="#34495e").pack(anchor="w")
+                bg="#ffffff", fg="#1e3a5f").pack(anchor="w")
         
         self.register_password_var = tk.StringVar()
         
         # Create a frame for password entry and button
-        register_password_input_frame = tk.Frame(password_frame, bg="white")
+        register_password_input_frame = tk.Frame(password_frame, bg="#ffffff")
         register_password_input_frame.pack(pady=5, fill=tk.X)
         
         # Password entry field
         self.register_password_entry = tk.Entry(register_password_input_frame, 
                                                textvariable=self.register_password_var, 
                                                font=("Arial", 12), show="•", bd=1, relief=tk.SOLID,
-                                               highlightthickness=1, highlightcolor="#3498db", 
-                                               highlightbackground="#ecf0f1")
+                                               highlightthickness=1, highlightcolor="#3d5a80", 
+                                               highlightbackground="#e8edf5")
         self.register_password_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
         
         # Show/hide password button
         self.register_show_password_btn = tk.Button(register_password_input_frame, text="👁", 
-                                                  font=("Arial", 10), bg="#ecf0f1", fg="#34495e",
+                                                  font=("Arial", 10), bg="#e8edf5", fg="#1e3a5f",
                                                   bd=1, relief=tk.SOLID, cursor="hand2",
                                                   width=3, height=1)
         self.register_show_password_btn.pack(side=tk.RIGHT, padx=(5, 0))
@@ -457,25 +459,26 @@ class AnimatedAuthWindow:
         # Password requirements label
         req_label = tk.Label(scrollable_frame, 
                             text="Password must be at least 8 characters with uppercase, lowercase, number, and special character",
-                            font=("Arial", 9), bg="white", fg="#7f8c8d", wraplength=350)
+                            font=("Arial", 9), bg="#ffffff", fg="#5d7a9e", wraplength=350)
         req_label.pack(pady=(0, 20), padx=40)
         
-        # Register button
+        # Register button with new color
         register_btn = tk.Button(scrollable_frame, text="SIGN UP", 
-                                font=("Arial", 12, "bold"), bg="#3498db", fg="white", 
-                                width=20, height=2, bd=0, cursor="hand2", 
+                                font=("Arial", 12, "bold"), bg="#3d5a80", fg="white", 
+                                width=20, height=2, bd=0, cursor="hand2",
+                                activebackground="#2d4a70", activeforeground="white",
                                 command=self.register)
         register_btn.pack(pady=10)
         
         # Login prompt
-        login_prompt = tk.Frame(scrollable_frame, bg="white")
+        login_prompt = tk.Frame(scrollable_frame, bg="#ffffff")
         login_prompt.pack(pady=10)
         
         tk.Label(login_prompt, text="Already have an account?", font=("Arial", 9), 
-                bg="white", fg="#7f8c8d").pack(side=tk.LEFT)
+                bg="#ffffff", fg="#5d7a9e").pack(side=tk.LEFT)
         
         tk.Button(login_prompt, text="Sign In", font=("Arial", 9, "bold"), 
-                 bg="white", fg="#3498db", bd=0, cursor="hand2",
+                 bg="#ffffff", fg="#3d5a80", bd=0, cursor="hand2",
                  command=self.show_login_form).pack(side=tk.LEFT, padx=5)
         
         # Update the canvas scrollregion
@@ -493,11 +496,11 @@ class AnimatedAuthWindow:
         if entry_widget.cget('show') == '':
             entry_widget.config(show='•')  # Hide password
             show_button.config(text='👁')  # Show open eye icon
-            show_button.config(bg='#ecf0f1', fg='#34495e')
+            show_button.config(bg='#e8edf5', fg='#1e3a5f')
         else:
             entry_widget.config(show='')   # Show password
             show_button.config(text='🙈')  # Show crossed eye icon
-            show_button.config(bg='#3498db', fg='white')
+            show_button.config(bg='#3d5a80', fg='white')
     
     def animate_panels(self, target_relx):
         if self.animation_running:
@@ -529,7 +532,7 @@ class AnimatedAuthWindow:
     def animate_background(self):
         # Create a smooth color changing background
         self.current_hue = (self.current_hue + 0.5) % 360
-        r, g, b = self.hsv_to_rgb(self.current_hue, 0.3, 0.2)
+        r, g, b = self.hsv_to_rgb(self.current_hue, 0.15, 0.15)
         color = f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
         
         self.canvas.configure(bg=color)
